@@ -7,12 +7,13 @@ FIGURE_OTHER_SYMBOL = '#'
 FIGURES = ['I', 'T', 'O', 'S', 'Z', 'L', 'J']
 
 WIDTH = 10
-HEIGHT = 20
+HEIGHT = 10
 
 event = {
     'new_figure': True,
     'end': False,
     'dead-line': 0,
+    'game-over': False,
 }
 
 parameter_figure = {
@@ -45,9 +46,9 @@ def _create_figure(figure_body):
     figures = {
         'I': [[0, 0], [1, 0], [2, 0]],
         'T': [[0, 0], [0, 1], [0, 2], [1, 1], [2, 1]],
-        'O': [[0, 0], [0, 1], [1, 0], [1, 1]],
-        'S': [[0, 1], [0, 2], [1, 0], [1, 1]],
-        'Z': [[0, 0], [0, 1], [1, 1], [1, 2]],
+        'O': [[1, 0], [1, 1], [2, 0], [2, 1]],
+        'S': [[1, 1], [1, 2], [2, 0], [2, 1]],
+        'Z': [[1, 0], [1, 1], [2, 1], [2, 2]],
         'L': [[0, 0], [1, 0], [2, 0], [2, 1]],
         'J': [[0, 1], [1, 1], [2, 0], [2, 1]],
     }
@@ -487,6 +488,14 @@ def other_figure_falling(other_figure, indexes):
                 other_figure[i][0] += 1
 
 
+def game_over(other_figure):
+    for i in other_figure:
+        if i[0] <= 2:
+            return True
+
+    return False
+
+
 def run():
     field = _create_field(WIDTH, HEIGHT)
     other_figure = []
@@ -500,8 +509,17 @@ def run():
             if current_figure:
 
                 for point in current_figure:
+
+                    if point in other_figure:
+                        event['game-over'] = True
+                        break
+
                     other_figure.append(point)
                     color_other_figures.append(parameter_figure['current_num_color'])
+
+            if event['game-over']:
+                print('GAME OVER')
+                break
 
             # Рандомная фигура из списка
             random_figure = choice(FIGURES)
@@ -519,11 +537,15 @@ def run():
 
             event['new_figure'] = False
         other_figure_falling(other_figure, indexes_delete_lines)
+
         _render(field, current_figure, other_figure, color_other_figures)
+
         current_figure = _figure_control(current_figure, other_figure)
         current_figure = _figure_falling(current_figure, other_figure)
         indexes_delete_lines = check_horizontal_line(other_figure)
         delete_horizontal_by_index_i(indexes_delete_lines, other_figure, color_other_figures)
+
+        print('other_figure:', other_figure)
 
 
 run()
